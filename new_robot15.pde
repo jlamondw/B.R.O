@@ -7,7 +7,7 @@
 
 #define IR_PIN 2            // Sensor pin 1 wired through a 220 ohm resistor
 
-#define DEBUG 0   
+#define DEBUG 1   
 
 int runtime_debug = 1;      // flag to output raw IR pulse data
 int output_key = 1;         // flag to print decoded key integers
@@ -39,7 +39,7 @@ int turnTime = 600;
 int dangerDistance = 17;
 
 // IR 10-24
-int dangerDistanceOpposite = 35;
+int dangerDistanceOpposite = 51;
 
 int straightAhead = 78;
 
@@ -88,7 +88,6 @@ void loop() {
     followWall(true);
   }
 
-  
 }
 
 void doKeyAction() {
@@ -325,14 +324,14 @@ void do_response(int key) {
       isFollowLeft = false;
       break;  
     case 135:  // play button
-      //turnRight();
-     easeRight(); 
+      turnRight();
+      //easeRight(); 
       isWanderMode = false;
       isFollowLeft = false;
       break;  
     case 129:  // play button
-      //turnLeft();
-      easeLeft();
+      turnLeft();
+      //easeLeft();
       isWanderMode = false;
       isFollowLeft = false;
       break;  
@@ -449,8 +448,9 @@ void followWall(boolean isLeft) {
    // while((distance > (dangerDistance)) && (oppositeDistance > (dangerDistanceOpposite))) {
      
     // move forward to next obstacle 
-    while((distance > (dangerDistance))) {
+    while((distance > (dangerDistance + 5))) {
       moveForward(); 
+       //delay(1000);
       distance = ping();
       Serial.println(distance);
     }
@@ -459,7 +459,10 @@ void followWall(boolean isLeft) {
     if(isLeft) {
       oppositeDistance = read_gp2d12_range();
       distance = ping();
-      while(oppositeDistance < dangerDistanceOpposite || distance < dangerDistance) {
+      
+int dangerDistance2 = 17;
+int dangerDistanceOpposite2 = 35;
+      while(oppositeDistance < dangerDistanceOpposite2 || distance < dangerDistance2) {
         turnRight();
         // need this to be able to interrupt??
         delay(100);
@@ -493,7 +496,17 @@ void followWall(boolean isLeft) {
   if (DEBUG || runtime_debug) { Serial.println(oppositeDistance);} 
 
 //  follow wall
-if(oppositeDistance < dangerDistanceOpposite) {
+
+
+
+if(oppositeDistance < dangerDistanceOpposite - 10) {
+    if (DEBUG || runtime_debug) {Serial.println("way too close, move away");}
+    if(isLeft) {
+      strongRight();
+    } else {
+      strongLeft();
+    }       
+} else if(oppositeDistance < dangerDistanceOpposite) {
     if (DEBUG || runtime_debug) {Serial.println("follow wall, ease away from it");}
     if(isLeft) {
       easeRight();
@@ -501,7 +514,7 @@ if(oppositeDistance < dangerDistanceOpposite) {
     } else {
       easeLeft();
     }       
-} else if(oppositeDistance <  dangerDistanceOpposite + 12) {  
+} else if(oppositeDistance <  dangerDistanceOpposite + 22) {  
     if (DEBUG || runtime_debug) {Serial.println("follow wall, ease back into it");}
     if(isLeft) {
       easeLeft(); 
